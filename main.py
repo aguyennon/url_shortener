@@ -21,7 +21,7 @@ def shorten(request: ShortenReq): # direct to use the class
     get_id = save_url(request.long_url)
     code = encode(get_id)
 
-    return {"long_url": f"http://127.0.0.1:8000/{code}"}
+    return {"code": code, "short_url": f"http://127.0.0.1:8000/{code}"}
 
 
 @app.get("/{code}")
@@ -31,10 +31,10 @@ def code_getter(code: str):
     except ValueError:
         raise HTTPException(status_code=404, detail="Short link not found.")
 
-    if get_url(get_id) is None:
+    long_url = get_url(get_id)
+    if long_url is None:
         raise HTTPException(status_code=404, detail="Short link not found.")
-    else:
-        obtained_url = get_url(get_id)
-        return RedirectResponse(obtained_url)
+
+    return RedirectResponse(long_url)
 
     
