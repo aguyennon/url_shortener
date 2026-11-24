@@ -19,7 +19,6 @@ def init_db():
         )
     conn.close()
 
-init_db()
 
 def save_url(long_url):
     conn = get_connection()
