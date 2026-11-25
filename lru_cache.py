@@ -27,11 +27,10 @@ class DoublyLinkedList:
     def add_to_front(self, node):
         old_first_node = self.head.next 
         
-        if node:
-            node.prev = self.head
-            node.next = old_first_node
-            self.head.next = node
-            old_first_node.prev = node
+        node.prev = self.head
+        node.next = old_first_node
+        self.head.next = node
+        old_first_node.prev = node
 
     
     def remove_last(self):
@@ -58,19 +57,23 @@ class DoublyLinkedList:
 class LRUCache:
 
     def __init__(self, capacity):
-        self.capacity = 2 # max # of entries
+        self.capacity = capacity # max # of entries
         self.map = {} # key to node dict
         self.order = DoublyLinkedList() # new dll obj
 
     
+    def _move_to_front(self, node): # helper
+        self.order.remove(node)
+        self.order.add_to_front(node)
+
+
     def get(self, key): # since we're grabbing the value, it has to be marked as just used 
         # has to be moved to front (reading entry counts as using it)
         if key not in self.map:
             return None
-        else:
-            node = self.map[key] # grab node from dict
-            removed_node = self.order.remove(node)
-            node_to_front = self.order.add_to_front(removed_node)
+
+        node = self.map[key] # grab node from dict
+        self._move_to_front(node)
         
         return node.value
 
@@ -80,12 +83,10 @@ class LRUCache:
             node = self.map[key] # get its node
             node.value = value # to match the parameter
             # move to front 
-            removed_node = self.order.remove(node)
-            node_to_front = self.order.add_to_front(removed_node)
-
-        elif key not in self.map:
+            self._move_to_front(node)
+        else:
             self.map[key] = Node(key, value)
-            node_to_front = self.order.add_to_front(self.map[key])
+            
 
         if len(self.map) > self.capacity:
             oldest_node = self.order.remove_last()
