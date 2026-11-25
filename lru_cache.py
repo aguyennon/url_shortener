@@ -95,13 +95,8 @@ class LRUCache:
 
 
 if __name__ == "__main__":
-    lru = LRUCache(capacity=2)
-
-
-    lru.put("A", 100)
-    lru.put("C", 3)
-
-    print(len(lru.map))
+    # test zone 
+    pass
 
         
 
