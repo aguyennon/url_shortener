@@ -72,5 +72,3 @@ def code_getter(code: str, request: Request):
 
 
 
-
-    

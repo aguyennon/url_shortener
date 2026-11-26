@@ -18,6 +18,35 @@ class MinHeap:
             i = parent
             parent = (i - 1) // 2 # to work out the parent of the new position
 
+    
+    def pop(self):
+        if not self.items:
+            return None
+        
+        smallest_item = self.items[0]
+        last_item = self.items.pop(-1) # remove last item so the list isnt affected
+
+        if not self.items:
+            return smallest_item # if thats all the list had then return it
+        # otherwise put last item at index 0
+        self.items[0] = last_item
+
+        i = 0
+        while True:
+            left_child = 2 * i + 1
+            right_child = 2 * i + 2
+            smallest = i
+            if left_child < len(self.items) and self.items[left_child] < self.items[smallest]:
+                smallest = left_child
+            if right_child < len(self.items) and self.items[right_child] < self.items[smallest]:
+                smallest = right_child
+            if smallest == i: # if still smallest than both children break
+                break
+            # otherwise, swap
+            self.items[i], self.items[smallest] = self.items[smallest], self.items[i]
+            i = smallest
+        
+        return smallest_item
 
 
 
@@ -25,17 +54,13 @@ if __name__ == "__main__":
     heap = MinHeap()
 
     heap.push(5)
-    print(heap.items[0])
     heap.push(1)
-    print(heap.items[0])
     heap.push(9)
-    print(heap.items[0])
     heap.push(3)
-    print(heap.items[0])
     heap.push(7)
-    print(heap.items[0])
     heap.push(2)
-    print(heap.items[0])
-    print(len(heap.items))
-    print(heap.items)
+    while heap.items:
+        print(heap.pop(), heap.items)
+
+    
 
