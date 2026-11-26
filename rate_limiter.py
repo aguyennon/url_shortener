@@ -28,6 +28,14 @@ class RateLimiter:
         queue.append(now)
         return True
 
+    def cleanup(self, now):
+
+        for ip in list(self.requests):
+            queue = self.requests[ip]
+            if not queue or now - queue[-1] >= self.window_seconds:
+                del self.requests[ip]
+
+
 
 if __name__ == "__main__":
     rl = RateLimiter(2, 60)

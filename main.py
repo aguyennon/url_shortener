@@ -1,13 +1,23 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from db import init_db, save_url, get_url
 from pydantic import BaseModel
 from signer import make_code, read_code
 from lru_cache import LRUCache
+from rate_limiter import RateLimiter
 
+rl = RateLimiter(60, 60)
 cache = LRUCache(1000)
 app = FastAPI()
 init_db()
+
+
+def _request_and_raise(request: Request):
+    ip = request.client.host # get ip from address it came from
+
+    if not rl.allow(ip):
+        raise HTTPException(status_code=429, detail="Too many requests.")
+
 
 @app.get("/health")
 def health():
@@ -19,9 +29,11 @@ class ShortenReq(BaseModel):
 
 
 @app.post("/shorten")
-def shorten(request: ShortenReq): # direct to use the class
-    get_id = save_url(request.long_url)
-    code = make_code(get_id)
+def shorten(body: ShortenReq, request: Request): # direct to use the class
+    _request_and_raise(request)
+
+    url_id = save_url(body.long_url)
+    code = make_code(url_id)
 
     return {"code": code, "short_url": f"http://127.0.0.1:8000/{code}"}
 
@@ -39,18 +51,20 @@ def stats():
     
 
 @app.get("/{code}")
-def code_getter(code: str):
-    new_id = read_code(code)
-    if new_id is None:
+def code_getter(code: str, request: Request):
+    _request_and_raise(request)
+
+    url_id = read_code(code)
+    if url_id is None:
         raise HTTPException(status_code=404, detail="Short link not found.")
 
-    long_url = cache.get(new_id) # reads from memory
+    long_url = cache.get(url_id) # reads from memory
     if long_url is None:
-        long_url = get_url(new_id) # reads from db
+        long_url = get_url(url_id) # reads from db
         if long_url is None:
             raise HTTPException(status_code=404, detail="Short link not found.")
         
-        cache.put(new_id, long_url)
+        cache.put(url_id, long_url)
 
 
     return RedirectResponse(long_url)
