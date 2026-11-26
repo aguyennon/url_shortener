@@ -8,6 +8,7 @@ from rate_limiter import RateLimiter
 
 rl = RateLimiter(60, 60)
 cache = LRUCache(1000)
+click_counts = {}
 app = FastAPI()
 init_db()
 
@@ -47,7 +48,7 @@ def stats():
     hit_ratio = (total_hits / total_lookups) if total_lookups else 0.0
     rounded_ratio = round(hit_ratio, 2)
 
-    return {"hits": total_hits, "misses": total_misses, "current_entries": entries, "hit_ratio": rounded_ratio}
+    return {"hits": total_hits, "misses": total_misses, "current_entries": entries, "hit_ratio": rounded_ratio, "click_counts": click_counts}
     
 
 @app.get("/{code}")
@@ -66,7 +67,7 @@ def code_getter(code: str, request: Request):
         
         cache.put(url_id, long_url)
 
-
+    click_counts[url_id] = click_counts.get(url_id, 0) + 1
     return RedirectResponse(long_url)
 
 

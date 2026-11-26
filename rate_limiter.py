@@ -29,7 +29,6 @@ class RateLimiter:
         return True
 
     def cleanup(self, now):
-
         for ip in list(self.requests):
             queue = self.requests[ip]
             if not queue or now - queue[-1] >= self.window_seconds:
