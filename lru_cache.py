@@ -60,6 +60,8 @@ class LRUCache:
         self.capacity = capacity # max # of entries
         self.map = {} # key to node dict
         self.order = DoublyLinkedList() # new dll obj
+        self.hits = 0
+        self.misses = 0
 
     
     def _move_to_front(self, node): # helper
@@ -70,10 +72,12 @@ class LRUCache:
     def get(self, key): # since we're grabbing the value, it has to be marked as just used 
         # has to be moved to front (reading entry counts as using it)
         if key not in self.map:
+            self.misses += 1
             return None
 
         node = self.map[key] # grab node from dict
         self._move_to_front(node)
+        self.hits += 1
         
         return node.value
 
@@ -84,14 +88,16 @@ class LRUCache:
             node.value = value # to match the parameter
             # move to front 
             self._move_to_front(node)
+
         else:
-            self.map[key] = Node(key, value)
+            node = Node(key, value)
+            self.map[key] = node
+            self.order.add_to_front(node)
             
 
         if len(self.map) > self.capacity:
             oldest_node = self.order.remove_last()
             del self.map[oldest_node.key]
-
 
 
 
