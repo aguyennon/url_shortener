@@ -5,12 +5,15 @@ from pydantic import BaseModel
 from signer import make_code, read_code
 from lru_cache import LRUCache
 from rate_limiter import RateLimiter
+from heap import top_k
 
 rl = RateLimiter(60, 60)
 cache = LRUCache(1000)
 click_counts = {}
 app = FastAPI()
 init_db()
+
+
 
 
 def _request_and_raise(request: Request):
@@ -50,6 +53,25 @@ def stats():
 
     return {"hits": total_hits, "misses": total_misses, "current_entries": entries, "hit_ratio": rounded_ratio, "click_counts": click_counts}
     
+
+@app.get("/top")
+def get_top():
+    top_counts = top_k(click_counts, 10)
+
+    top_links = []
+    for clicks, url_id in top_counts.items():
+        top_links.append(
+            {
+            "code": make_code(url_id), 
+            "clicks": clicks
+            }
+        )
+
+    return top_links
+        
+
+
+
 
 @app.get("/{code}")
 def code_getter(code: str, request: Request):

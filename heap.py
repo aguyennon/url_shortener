@@ -49,10 +49,33 @@ class MinHeap:
         return smallest_item
 
 
+def top_k(counts={}, k=None):
+    heap = MinHeap()
+    for url_id, clicks in counts.items():
+        heap.push((clicks, url_id))
+        if len(heap.items) > k:
+            heap.pop()
+            break
+
+    top_list = []
+    while heap.items:
+        top_list.append(heap.pop())
+
+    top_list.reverse()
+    return top_list
+
+
+    
+
+
+
 
 if __name__ == "__main__":
     heap = MinHeap()
 
+    print(top_k({}, 3))
+
+    '''
     heap.push(5)
     heap.push(1)
     heap.push(9)
@@ -61,6 +84,7 @@ if __name__ == "__main__":
     heap.push(2)
     while heap.items:
         print(heap.pop(), heap.items)
+    '''
 
     
 
